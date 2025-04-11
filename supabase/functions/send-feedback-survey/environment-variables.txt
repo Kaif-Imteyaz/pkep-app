@@ -1,0 +1,37 @@
+# Environment Variables for Supabase Edge Function
+
+Add these variables to your Supabase Edge Function:
+
+## Required Variables
+1. **WHATSAPP_TOKEN**
+   Value: EAAJf22DDn5UBO8ccNCY6XOAeB1N0qZC8Od8tUJIijyxDuHUPUJDj1Ac760CWBV8aFDZCyYamjia9b8dUCs77jz5mOQoDAUampmActSzPZCxTk9bCsivLphLZCilZCoIuuHd33ZA6nMAacIgD7SEFJ8GkzWpoSoalmN2F7ymaIKZCFZBFJYKEZCR0a9rPgEZCrTQstZBvD6YwZCihSkj58RmvKPwotuMIZABuLz3lUj5gaJKUg2uthM48IziwZD
+
+2. **WHATSAPP_PHONE_NUMBER_ID**
+   Value: 637393796117589
+
+3. **WHATSAPP_API_VERSION**
+   Value: v18.0
+
+## Steps to Add Variables
+
+1. Go to the Supabase dashboard: https://app.supabase.com/
+2. Select your project (lnnfolrzonnnuazlhvwo)
+3. In the left sidebar, click on "Edge Functions"
+4. Find your "send-feedback-survey" function
+5. Click the three dots menu (...) and select "Edit environment variables"
+6. Add the three variables above with their exact values
+7. Click "Save"
+
+## Updating the Code
+
+Since you already have your phone number ID in your .env file, update this line in the Edge Function code:
+
+```ts
+// Replace this line:
+const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID') || '104077982572158';
+
+// With this:
+const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID') || '637393796117589';
+```
+
+This will ensure your function uses your actual WhatsApp test phone number ID instead of the default one. 

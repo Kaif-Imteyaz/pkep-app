@@ -7,4 +7,8 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  define: {
+    // Fix for axios and other dependencies that use global
+    _global: ({})
+  },
 });

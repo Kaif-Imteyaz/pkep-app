@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, LogOut, Home, BookOpen, ClipboardList, X, LayoutDashboard } from 'lucide-react';
+import { Menu, LogOut, Home, BookOpen, ClipboardList, X, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export function Layout({ children, onViewChange }: { children: React.ReactNode; onViewChange: (view: string) => void }) {
@@ -20,6 +20,7 @@ export function Layout({ children, onViewChange }: { children: React.ReactNode; 
     { id: 'dashboard', label: 'Service Metrics', icon: LayoutDashboard },
     { id: 'reflection', label: 'Reflection Board', icon: ClipboardList },
     { id: 'resources', label: 'Resource Hub', icon: BookOpen },
+    { id: 'whatsapp', label: 'WhatsApp Settings', icon: MessageSquare },
   ];
 
   return (

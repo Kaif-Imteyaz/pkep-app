@@ -1,0 +1,63 @@
+# Fixing CORS Issues in Supabase Edge Functions
+
+Since we can't deploy via CLI due to Docker Desktop being unavailable, we need to manually update the Edge Function in the Supabase Dashboard.
+
+## Steps to Fix CORS:
+
+1. Go to the Supabase dashboard: https://app.supabase.io/
+2. Select your project (lnnfolrzonnnuazlhvwo)
+3. In the left sidebar, navigate to "Edge Functions"
+4. Find and click on "send-feedback-survey"
+5. Click "Edit" to modify the function code
+6. Replace or update the CORS headers section with:
+
+```ts
+// CORS headers with both localhost and production URLs
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*', // Allow all origins for testing
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-auth',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
+  'Access-Control-Max-Age': '86400', // 24 hours cache for preflight requests
+}
+```
+
+7. Make sure your OPTIONS handler is properly implemented:
+
+```ts
+// Handle CORS preflight requests - this is critical for browser compatibility
+if (req.method === 'OPTIONS') {
+  console.log('Handling OPTIONS request (CORS preflight)');
+  return new Response('ok', { 
+    headers: corsHeaders,
+    status: 200
+  });
+}
+```
+
+8. Also ensure all your response objects include the CORS headers:
+
+```ts
+return new Response(
+  JSON.stringify({ 
+    status: 'success', 
+    message: 'Feedback survey sent',
+    data: responseData
+  }),
+  { 
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status: 200 
+  }
+);
+```
+
+9. Click "Deploy" to update the function
+
+## Testing After Changes:
+
+1. Go back to your React app
+2. Enter a phone number in the "Recipient WhatsApp Number" field
+3. Click "Send Feedback Template"
+4. Check browser console for any CORS errors
+5. If successful, you should see a success message without CORS errors
+
+Remember to check the Supabase Edge Function logs if you encounter any issues. 

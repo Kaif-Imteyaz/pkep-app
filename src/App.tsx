@@ -5,10 +5,12 @@ import { Dashboard } from './components/Dashboard';
 import { ReflectionBoard } from './components/ReflectionBoard';
 import { ResourceHub } from './components/ResourceHub';
 import { Home } from './components/Home';
+import { WhatsAppSettings } from './components/WhatsAppSettings';
 import { supabase } from './lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 export default function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [currentView, setCurrentView] = useState('home');
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function App() {
       {currentView === 'dashboard' && <Dashboard />}
       {currentView === 'reflection' && <ReflectionBoard />}
       {currentView === 'resources' && <ResourceHub />}
+      {currentView === 'whatsapp' && <WhatsAppSettings />}
     </Layout>
   );
 }

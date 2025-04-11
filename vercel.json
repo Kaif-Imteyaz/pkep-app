@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/pages/api/$1.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "SUPABASE_URL": "env",
+    "SUPABASE_SERVICE_ROLE_KEY": "env",
+    "FACEBOOK_APP_SECRET": "env",
+    "WEBHOOK_VERIFY_TOKEN": "env",
+    "WHATSAPP_TOKEN": "env",
+    "WHATSAPP_PHONE_NUMBER_ID": "env"
+  }
+} 
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/pages/api/$1.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "SUPABASE_URL": "env",
+    "SUPABASE_SERVICE_ROLE_KEY": "env",
+    "FACEBOOK_APP_SECRET": "env",
+    "WEBHOOK_VERIFY_TOKEN": "env",
+    "WHATSAPP_TOKEN": "env",
+    "WHATSAPP_PHONE_NUMBER_ID": "env"
+  }
+} 
