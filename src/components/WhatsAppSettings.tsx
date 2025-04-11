@@ -41,7 +41,6 @@ export function WhatsAppSettings() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [sendingFeedback, setSendingFeedback] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [showSetupInstructions, setShowSetupInstructions] = useState(false);
 
   // Check if the user is authenticated
   useEffect(() => {
@@ -499,113 +498,6 @@ export function WhatsAppSettings() {
               </div>
             )}
             
-            {/* Setup Instructions Alert */}
-            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-yellow-400" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">Function Setup Required</h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>The WhatsApp functionality requires setting up an Edge Function in Supabase.</p>
-                    <button 
-                      type="button"
-                      onClick={() => setShowSetupInstructions(!showSetupInstructions)}
-                      className="mt-2 text-sm font-medium text-yellow-800 hover:text-yellow-600"
-                    >
-                      {showSetupInstructions ? 'Hide instructions' : 'Show setup instructions'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {showSetupInstructions && (
-                <div className="mt-4 bg-white p-3 rounded border border-yellow-200 text-sm text-gray-700">
-                  <ol className="list-decimal ml-4 space-y-2">
-                    <li>Go to the <a href="https://app.supabase.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Supabase dashboard</a></li>
-                    <li>Select your project (lnnfolrzonnnuazlhvwo)</li>
-                    <li>Navigate to "Edge Functions" in the left sidebar</li>
-                    <li>Click "Create a new function" and name it <code className="bg-gray-100 px-1 rounded">send-feedback-survey</code></li>
-                    <li>Paste the code provided in <code className="bg-gray-100 px-1 rounded">PKEP/supabase/functions/send-feedback-survey/instructions.txt</code></li>
-                    <li>Deploy the function and set the required environment variables:
-                      <ul className="list-disc ml-5 mt-1">
-                        <li><code className="bg-gray-100 px-1 rounded">WHATSAPP_TOKEN</code>: Your WhatsApp API token</li>
-                        <li><code className="bg-gray-100 px-1 rounded">WHATSAPP_PHONE_NUMBER_ID</code>: Your test phone number ID</li>
-                        <li><code className="bg-gray-100 px-1 rounded">WHATSAPP_API_VERSION</code>: v18.0</li>
-                      </ul>
-                    </li>
-                  </ol>
-                </div>
-              )}
-            </div>
-            
-            {/* Feedback Template Section */}
-            <div className="mb-8 p-4 bg-green-50 rounded-lg border border-green-200">
-              <h4 className="text-md font-medium text-green-900 mb-2">Send Feedback Template</h4>
-              <p className="text-sm text-green-800 mb-4">
-                Send a feedback survey template to a WhatsApp number directly (no profile setup required).
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="recipient-phone" className="block text-sm font-medium text-gray-700">
-                    Recipient WhatsApp Number
-                  </label>
-                  <div className="mt-1 flex rounded-md shadow-sm">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                      <Phone className="h-4 w-4" />
-                    </span>
-                    <input
-                      type="tel"
-                      name="recipient-phone"
-                      id="recipient-phone"
-                      value={recipientPhone}
-                      onChange={(e) => setRecipientPhone(e.target.value)}
-                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      placeholder="+91xxxxxxxxxx"
-                    />
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Enter recipient's WhatsApp number with country code
-                  </p>
-                </div>
-                
-                <button
-                  type="button"
-                  onClick={sendFeedbackTemplate}
-                  disabled={sendingFeedback || !recipientPhone}
-                  className="w-full inline-flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                >
-                  {sendingFeedback ? (
-                    <>
-                      <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                      Sending Feedback Template...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-5 w-5 mr-2" />
-                      Send Feedback Template
-                    </>
-                  )}
-                </button>
-                
-                {feedbackStatus === 'success' && (
-                  <div className="mt-2 p-2 bg-green-100 text-green-700 rounded-md text-center">
-                    <CheckCircle className="inline-block h-5 w-5 mr-1" />
-                    <span>Feedback template sent successfully!</span>
-                  </div>
-                )}
-                
-                {feedbackStatus === 'error' && (
-                  <div className="mt-2 p-2 bg-red-100 text-red-700 rounded-md text-center">
-                    <XCircle className="inline-block h-5 w-5 mr-1" />
-                    <span>Error sending feedback template. Please try again.</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
             <div className="space-y-6">
               <div>
                 <label htmlFor="whatsapp-phone" className="block text-sm font-medium text-gray-700">
@@ -761,16 +653,70 @@ export function WhatsAppSettings() {
               </div>
             )}
             
-            {/* Instructions */}
-            <div className="mt-10 bg-blue-50 rounded-md p-4">
-              <h4 className="text-md font-medium text-blue-900 mb-2">How to Use WhatsApp Integration</h4>
-              <ul className="list-disc pl-5 text-sm text-blue-800 space-y-1">
-                <li>To send a feedback template: Enter the recipient's phone number and click "Send Feedback Template"</li>
-                <li>To set up WhatsApp integration: Enter your number, enable opt-in, and save settings</li>
-                <li>Reply to the verification message you receive on WhatsApp</li>
-                <li>Use commands like <code>#rose</code>, <code>#thorn</code>, and <code>#bud</code> to share knowledge</li>
-                <li>Type <code>menu</code> to access the main menu with options for meetings and performance data</li>
-              </ul>
+            {/* Feedback Template Section */}
+            <div className="mb-8 p-4 bg-green-50 rounded-lg border border-green-200">
+              <h4 className="text-md font-medium text-green-900 mb-2">Send Feedback Template</h4>
+              <p className="text-sm text-green-800 mb-4">
+                Send a feedback survey template to a WhatsApp number directly (no profile setup required).
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="recipient-phone" className="block text-sm font-medium text-gray-700">
+                    Recipient WhatsApp Number
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                      <Phone className="h-4 w-4" />
+                    </span>
+                    <input
+                      type="tel"
+                      name="recipient-phone"
+                      id="recipient-phone"
+                      value={recipientPhone}
+                      onChange={(e) => setRecipientPhone(e.target.value)}
+                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="+91xxxxxxxxxx"
+                    />
+                  </div>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Enter recipient's WhatsApp number with country code
+                  </p>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={sendFeedbackTemplate}
+                  disabled={sendingFeedback || !recipientPhone}
+                  className="w-full inline-flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                >
+                  {sendingFeedback ? (
+                    <>
+                      <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                      Sending Feedback Template...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-5 w-5 mr-2" />
+                      Send Feedback Template
+                    </>
+                  )}
+                </button>
+                
+                {feedbackStatus === 'success' && (
+                  <div className="mt-2 p-2 bg-green-100 text-green-700 rounded-md text-center">
+                    <CheckCircle className="inline-block h-5 w-5 mr-1" />
+                    <span>Feedback template sent successfully!</span>
+                  </div>
+                )}
+                
+                {feedbackStatus === 'error' && (
+                  <div className="mt-2 p-2 bg-red-100 text-red-700 rounded-md text-center">
+                    <XCircle className="inline-block h-5 w-5 mr-1" />
+                    <span>Error sending feedback template. Please try again.</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
