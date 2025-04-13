@@ -240,59 +240,42 @@ async function handleInteractiveMessage(from, userId, messageId, interactive) {
 
 // Webhook handler - No authentication required
 export default async function handler(req, res) {
-  try {
-    console.log('Webhook request received:', {
-      method: req.method,
-      query: req.query,
-      headers: req.headers
-    });
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', '*');
 
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  try {
     // Handle GET requests (webhook verification)
     if (req.method === 'GET') {
       const mode = req.query['hub.mode'];
       const token = req.query['hub.verify_token'];
       const challenge = req.query['hub.challenge'];
 
-      console.log('Verification attempt:', {
-        mode,
-        token,
-        challenge,
-        expectedToken: WEBHOOK_VERIFY_TOKEN,
-        matches: token === WEBHOOK_VERIFY_TOKEN
-      });
+      console.log('Webhook verification request:', { mode, token, challenge });
 
-      // Check if token and mode are in the query string
-      if (!mode || !token) {
-        console.error('Missing parameters');
-        return res
-          .status(400)
-          .setHeader('Content-Type', 'text/plain')
-          .send('Missing parameters');
-      }
-
-      // Check the mode and token
+      // Verify the token
       if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
         console.log('Webhook verified successfully');
-        // Return ONLY the challenge string with text/plain
-        return res
-          .status(200)
-          .setHeader('Content-Type', 'text/plain')
-          .send(challenge);
+        // Return the challenge value as plain text
+        return res.status(200).setHeader('Content-Type', 'text/plain').send(challenge);
+      } else {
+        console.error('Webhook verification failed');
+        return res.status(403).send('Verification failed');
       }
-
-      console.error('Verification failed - token mismatch');
-      return res
-        .status(403)
-        .setHeader('Content-Type', 'text/plain')
-        .send('Forbidden');
     }
 
     // Handle POST requests (webhook events)
-    if (req.method === "POST") {
+    if (req.method === 'POST') {
       // Verify webhook signature
       if (!verifyWebhookSignature(req)) {
         console.error("Invalid webhook signature");
-        return res.status(403).json({ error: "Invalid signature" });
+        return res.status(401).send("Invalid signature");
       }
 
       const body = req.body;
@@ -346,23 +329,27 @@ export default async function handler(req, res) {
         }
       }
 
-      return res.status(200).json({ status: "ok" });
+      // Always return 200 OK for webhook events
+      return res.status(200).send('EVENT_RECEIVED');
     }
 
-    return res.status(405).json({ error: "Method not allowed" });
+    // If we get here, it's an unsupported method
+    return res.status(405).send('Method not allowed');
   } catch (error) {
     console.error("Webhook error:", error);
     logEvent("WEBHOOK_ERROR", {
       error: error.message,
-      stack: error.stack,
+      requestId: `webhook-${Date.now()}`
     });
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).send("Internal server error");
   }
 }
 
 export const config = {
   api: {
-    bodyParser: false, // Disable body parsing, we'll do it ourselves
-    externalResolver: true, // This is a handler that resolves on its own
+    bodyParser: {
+      sizeLimit: '1mb',
+    },
+    externalResolver: true,
   },
 };
