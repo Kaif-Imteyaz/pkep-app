@@ -3,7 +3,7 @@ export const middleware = async (request) => {
   const pathname = url.pathname;
 
   // Allow webhook route without auth
-  if (pathname.startsWith('/api/webhook')) {
+  if (pathname === '/api/webhook') {
     return new Response(null, { status: 200 });
   }
 

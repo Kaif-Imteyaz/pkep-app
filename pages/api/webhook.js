@@ -247,9 +247,9 @@ export default async function handler(req, res) {
   recordWebhookReceived();
 
   try {
-    console.log("Received webhook request:", req.method);
-    console.log("Query parameters:", req.query);
-
+    console.log('Received webhook request:', req.method, req.url);
+    console.log('Query parameters:', req.query);
+    
     // Handle GET requests (webhook verification)
     if (req.method === "GET") {
       const mode = req.query["hub.mode"];
