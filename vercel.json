@@ -8,7 +8,13 @@
   "routes": [
     {
       "src": "/webhook",
-      "dest": "/pages/api/webhook.js"
+      "dest": "/pages/api/webhook.js",
+      "methods": ["GET", "POST", "OPTIONS"]
+    },
+    {
+      "src": "/api/webhook",
+      "dest": "/pages/api/webhook.js",
+      "methods": ["GET", "POST", "OPTIONS"]
     },
     {
       "src": "/api/(.*)",
@@ -30,16 +36,6 @@
     "WHATSAPP_TOKEN": "env",
     "WHATSAPP_PHONE_NUMBER_ID": "env"
   },
-  "rewrites": [
-    {
-      "source": "/api/webhook",
-      "destination": "/pages/api/webhook.js"
-    },
-    {
-      "source": "/webhook",
-      "destination": "/pages/api/webhook.js"
-    }
-  ],
   "headers": [
     {
       "source": "/api/webhook",
