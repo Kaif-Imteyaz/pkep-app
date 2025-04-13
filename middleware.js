@@ -1,31 +1,45 @@
+// middleware.js
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 
-// List of public routes that don't require authentication
-const publicRoutes = [
-  '/api/webhook',
-  // Add other public routes here
-];
-
 export async function middleware(req) {
-  const res = NextResponse.next();
+  try {
+    const res = NextResponse.next();
+    const supabase = createMiddlewareClient({ req, res });
 
-  // Check if the requested path is in the public routes list
-  if (publicRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+    // Skip auth check for webhook and public routes
+    if (req.nextUrl.pathname.startsWith('/api/webhook')) {
+      return res;
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session && !req.nextUrl.pathname.startsWith('/login')) {
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      return NextResponse.redirect(redirectUrl);
+    }
+
     return res;
+  } catch (e) {
+    console.error('Middleware error:', e);
+    return NextResponse.next();
   }
+}
 
-  // Create Supabase client with middleware
-  const supabase = createMiddlewareClient({ req, res });
-
-  // Refresh session if expired
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // If no session and not a public route, redirect to login
-  if (!session) {
-    const redirectUrl = new URL('/login', req.url);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  return res;
-} 
+// Specify which routes this middleware should run for
+export const config = {
+  matcher: [
+    /*
+     * Match all routes except for:
+     * 1. /api/webhook (WhatsApp webhook)
+     * 2. /_next (Next.js internals)
+     * 3. /static (static files)
+     * 4. /*.{png,jpg,gif} (image files)
+     * 5. /favicon.ico (favicon file)
+     */
+    '/((?!api/webhook|_next/|static/|.*\\.(?:png|jpg|gif)|favicon.ico).*)',
+  ],
+};
