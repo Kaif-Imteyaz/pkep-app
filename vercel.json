@@ -29,5 +29,51 @@
     "WEBHOOK_VERIFY_TOKEN": "env",
     "WHATSAPP_TOKEN": "env",
     "WHATSAPP_PHONE_NUMBER_ID": "env"
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/webhook",
+      "destination": "/pages/api/webhook.js"
+    },
+    {
+      "source": "/webhook",
+      "destination": "/pages/api/webhook.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/webhook",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/webhook",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 } 

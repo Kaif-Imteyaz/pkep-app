@@ -33,12 +33,15 @@ export const middleware = async (request) => {
           }
         });
       }
+
+      // For any other method, return 405
+      return new Response('Method not allowed', { status: 405 });
     }
   
     // Public paths that don't require auth
     const PUBLIC_PATHS = ['/', '/login', '/register'];
   
-    // Allow public paths without auth
+    // Allow other public paths without auth
     if (PUBLIC_PATHS.includes(pathname)) {
       return new Response(null, { status: 200 });
     }
