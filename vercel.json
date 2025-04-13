@@ -7,6 +7,10 @@
   "outputDirectory": "dist",
   "routes": [
     {
+      "src": "/webhook",
+      "dest": "/pages/api/webhook.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/pages/api/$1.js"
     },
