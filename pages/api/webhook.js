@@ -251,46 +251,29 @@ export default async function handler(req, res) {
     console.log('Query parameters:', req.query);
     
     // Handle GET requests (webhook verification)
-    if (req.method === "GET") {
-      const mode = req.query["hub.mode"];
-      const token = req.query["hub.verify_token"];
-      const challenge = req.query["hub.challenge"];
+    if (req.method === 'GET') {
+      const mode = req.query['hub.mode'];
+      const token = req.query['hub.verify_token'];
+      const challenge = req.query['hub.challenge'];
 
-      console.log("Webhook verification request:", { 
-        mode, 
-        token, 
-        challenge,
-        expectedToken: WEBHOOK_VERIFY_TOKEN,
-        hasAppSecret: !!FACEBOOK_APP_SECRET
-      });
+      console.log('Webhook verification request:', { mode, token, challenge });
 
       // Check if token and mode are in the query string
       if (!mode || !token) {
-        console.error("Missing query parameters");
-        return res.status(400).json({
-          error: "Missing query parameters",
-          required: ["hub.mode", "hub.verify_token", "hub.challenge"],
-          received: req.query,
-          environment: {
-            hasVerifyToken: !!WEBHOOK_VERIFY_TOKEN,
-            hasAppSecret: !!FACEBOOK_APP_SECRET
-          }
-        });
+        console.error('Missing query parameters');
+        return res.status(400).setHeader('Content-Type', 'text/plain').send('Missing parameters');
       }
 
       // Check the mode and token
-      if (mode === "subscribe" && token === WEBHOOK_VERIFY_TOKEN) {
-        // Respond with the challenge token
-        console.log("WEBHOOK_VERIFIED");
-        return res.status(200).send(challenge);
+      if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
+        // Respond with ONLY the challenge token from the request
+        console.log('WEBHOOK_VERIFIED');
+        return res.status(200).setHeader('Content-Type', 'text/plain').send(challenge);
       }
 
       // Respond with '403 Forbidden' if tokens do not match
-      console.error("Verification failed");
-      return res.status(403).json({
-        error: "Verification failed",
-        details: "Token mismatch or invalid mode",
-      });
+      console.error('Verification failed - Token mismatch');
+      return res.status(403).setHeader('Content-Type', 'text/plain').send('Forbidden');
     }
 
     // Handle POST requests (webhook events)
