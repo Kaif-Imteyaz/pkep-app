@@ -8,13 +8,7 @@
   "routes": [
     {
       "src": "/webhook",
-      "dest": "/pages/api/webhook.js",
-      "methods": ["GET", "POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/webhook",
-      "dest": "/pages/api/webhook.js",
-      "methods": ["GET", "POST", "OPTIONS"]
+      "dest": "/pages/api/webhook.js"
     },
     {
       "src": "/api/(.*)",
@@ -35,41 +29,5 @@
     "WEBHOOK_VERIFY_TOKEN": "env",
     "WHATSAPP_TOKEN": "env",
     "WHATSAPP_PHONE_NUMBER_ID": "env"
-  },
-  "headers": [
-    {
-      "source": "/api/webhook",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "*"
-        }
-      ]
-    },
-    {
-      "source": "/webhook",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "*"
-        }
-      ]
-    }
-  ]
+  }
 } 
