@@ -19,9 +19,7 @@ const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 // Verify webhook signature from WhatsApp
 function verifyWebhookSignature(req) {
   if (!FACEBOOK_APP_SECRET) {
-    console.warn(
-      "FACEBOOK_APP_SECRET not configured. Skipping signature verification."
-    );
+    console.warn("FACEBOOK_APP_SECRET not configured. Skipping signature verification.");
     return true;
   }
 
@@ -283,53 +281,62 @@ export default async function handler(req, res) {
 
       // Process WhatsApp messages
       if (body.object === "whatsapp_business_account") {
-        for (const entry of body.entry) {
-          for (const change of entry.changes) {
-            if (change.value.messages) {
-              for (const message of change.value.messages) {
-                const from = message.from;
-                const userId = change.value.metadata.phone_number_id;
-                const messageId = message.id;
+        // Log the webhook payload
+        console.log("Webhook payload:", JSON.stringify(body, null, 2));
+        
+       // // Process WhatsApp messages
+// if (body.object === "whatsapp_business_account") {
+//   for (const entry of body.entry) {
+//     for (const change of entry.changes) {
+//       if (change.value.messages) {
+//         for (const message of change.value.messages) {
+//           const from = message.from;
+//           const userId = change.value.metadata.phone_number_id;
+//           const messageId = message.id;
 
-                try {
-                  // Handle different message types
-                  if (message.type === "text") {
-                    await handleTextMessage(
-                      from,
-                      userId,
-                      messageId,
-                      message.text.body
-                    );
-                  } else if (message.type === "interactive") {
-                    await handleInteractiveMessage(
-                      from,
-                      userId,
-                      messageId,
-                      message.interactive
-                    );
-                  }
-                } catch (error) {
-                  console.error("Error processing message:", error);
-                  // Continue processing other messages even if one fails
-                }
-              }
-            }
+//           try {
+//             // Handle different message types
+//             if (message.type === "text") {
+//               await handleTextMessage(
+//                 from,
+//                 userId,
+//                 messageId,
+//                 message.text.body
+//               );
+//             } else if (message.type === "interactive") {
+//               await handleInteractiveMessage(
+//                 from,
+//                 userId,
+//                 messageId,
+//                 message.interactive
+//               );
+//             }
+//           } catch (error) {
+//             console.error("Error processing message:", error);
+//             // Continue processing other messages even if one fails
+//           }
+//         }
+//       }
 
-            // Process status updates
-            if (change.value.statuses) {
-              for (const status of change.value.statuses) {
-                try {
-                  await updateMessageStatus(status.id, status.status);
-                } catch (error) {
-                  console.error("Error updating message status:", error);
-                }
-              }
-            }
-          }
-        }
+//       // Process status updates
+//       if (change.value.statuses) {
+//         for (const status of change.value.statuses) {
+//           try {
+//             await updateMessageStatus(status.id, status.status);
+//           } catch (error) {
+//             console.error("Error updating message status:", error);
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
+
+
+        // Always return 200 OK for webhook events
+        return res.status(200).send('EVENT_RECEIVED');
       }
 
-      // Always return 200 OK for webhook events
       return res.status(200).send('EVENT_RECEIVED');
     }
 
