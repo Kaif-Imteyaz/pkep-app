@@ -1,22 +1,26 @@
+import { NextResponse } from 'next/server';
+
 export const middleware = async (request) => {
   const url = new URL(request.url);
-  
-  // Skip auth check for webhook and public routes
-  if (url.pathname.startsWith('/api/webhook')) {
-    return new Response(null, { status: 200 });
+  const pathname = url.pathname;
+
+  // Allow webhook route without auth
+  if (pathname.startsWith('/api/webhook')) {
+    return NextResponse.next();
   }
 
-  // For other routes, redirect to login if not authenticated
-  if (!url.pathname.startsWith('/login')) {
-    url.pathname = '/login';
-    return Response.redirect(url);
+  // Allow login page
+  if (pathname.startsWith('/login')) {
+    return NextResponse.next();
   }
 
-  return new Response(null, { status: 200 });
-}
+  // Redirect all other paths to login
+  url.pathname = '/login';
+  return NextResponse.redirect(url);
+};
 
 export const config = {
   matcher: [
-    '/((?!api/webhook|_next/|static/|.*\\.(?:png|jpg|gif)|favicon.ico).*)',
+    '/((?!_next/|static/|.*\\.(?:png|jpg|gif)|favicon.ico).*)',
   ],
-} 
+};
