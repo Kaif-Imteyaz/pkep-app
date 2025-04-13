@@ -23,11 +23,6 @@ export const middleware = async (request) => {
   
   export const config = {
     matcher: [
-      /*
-       * Match all paths except:
-       * - /_next (Next.js internals)
-       * - /static (static files)
-       */
-      '/((?!_next/|static/|.*\\.(png|jpg|gif|ico|json|xml)).*)'
+      '/((?!_next/|static/|.*\\.(?:png|jpg|gif)|favicon.ico).*)',
     ],
   };
