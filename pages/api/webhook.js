@@ -240,40 +240,51 @@ async function handleInteractiveMessage(from, userId, messageId, interactive) {
 
 // Webhook handler - No authentication required
 export default async function handler(req, res) {
-  // Track this webhook request
-  const tracker = trackWebhookRequest(req);
-
-  // Record that we received a webhook for health monitoring
-  recordWebhookReceived();
-
   try {
-    console.log('Received webhook request:', req.method, req.url);
-    console.log('Query parameters:', req.query);
-    
+    console.log('Webhook request received:', {
+      method: req.method,
+      query: req.query,
+      headers: req.headers
+    });
+
     // Handle GET requests (webhook verification)
     if (req.method === 'GET') {
       const mode = req.query['hub.mode'];
       const token = req.query['hub.verify_token'];
       const challenge = req.query['hub.challenge'];
 
-      console.log('Webhook verification request:', { mode, token, challenge });
+      console.log('Verification attempt:', {
+        mode,
+        token,
+        challenge,
+        expectedToken: WEBHOOK_VERIFY_TOKEN,
+        matches: token === WEBHOOK_VERIFY_TOKEN
+      });
 
       // Check if token and mode are in the query string
       if (!mode || !token) {
-        console.error('Missing query parameters');
-        return res.status(400).setHeader('Content-Type', 'text/plain').send('Missing parameters');
+        console.error('Missing parameters');
+        return res
+          .status(400)
+          .setHeader('Content-Type', 'text/plain')
+          .send('Missing parameters');
       }
 
       // Check the mode and token
       if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
-        // Respond with ONLY the challenge token from the request
-        console.log('WEBHOOK_VERIFIED');
-        return res.status(200).setHeader('Content-Type', 'text/plain').send(challenge);
+        console.log('Webhook verified successfully');
+        // Return ONLY the challenge string with text/plain
+        return res
+          .status(200)
+          .setHeader('Content-Type', 'text/plain')
+          .send(challenge);
       }
 
-      // Respond with '403 Forbidden' if tokens do not match
-      console.error('Verification failed - Token mismatch');
-      return res.status(403).setHeader('Content-Type', 'text/plain').send('Forbidden');
+      console.error('Verification failed - token mismatch');
+      return res
+        .status(403)
+        .setHeader('Content-Type', 'text/plain')
+        .send('Forbidden');
     }
 
     // Handle POST requests (webhook events)
