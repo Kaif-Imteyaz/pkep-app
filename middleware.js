@@ -24,6 +24,16 @@ export const middleware = async (request) => {
 
 export const config = {
   matcher: [
-    '/((?!_next/|static/|.*\\.(png|jpg|gif|ico|json|xml)).*)',
-  ],
+    // Match all paths except static files and system files
+    '/:path*',
+    '!/api/webhook',
+    '!/_next/:path*',
+    '!/static/:path*',
+    '!/favicon.ico',
+    '!/*.png',
+    '!/*.jpg',
+    '!/*.gif',
+    '!/*.json',
+    '!/*.xml'
+  ]
 };
