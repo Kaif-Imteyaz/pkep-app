@@ -21,5 +21,9 @@ export async function middleware(req) {
       return NextResponse.redirect(redirectUrl);
     }
 
-  return res;
+    return res;
+  } catch (e) {
+    console.error('Middleware error:', e);
+    return NextResponse.next();
+  }
 } 
