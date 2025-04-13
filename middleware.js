@@ -1,39 +1,24 @@
 export const middleware = async (request) => {
-  const url = new URL(request.url);
-
-  // Always allow webhook endpoint
-  if (url.pathname === '/api/webhook') {
-    return new Response(null, { status: 200 });
-  }
-
-  // Allow login page
-  if (url.pathname === '/login') {
-    return new Response(null, { status: 200 });
-  }
-
-  // Check for auth cookie
-  const authCookie = request.cookies.get('sb-auth-token');
+    const url = new URL(request.url);
+    const pathname = url.pathname;
   
-  if (!authCookie) {
-    // Redirect to login for non-authenticated requests
-    return Response.redirect(new URL('/login', url));
-  }
-
-  return new Response(null, { status: 200 });
-};
-
-export const config = {
-  matcher: [
-    // Match all paths except static files and system files
-    '/:path*',
-    '!/api/webhook',
-    '!/_next/:path*',
-    '!/static/:path*',
-    '!/favicon.ico',
-    '!/*.png',
-    '!/*.jpg',
-    '!/*.gif',
-    '!/*.json',
-    '!/*.xml'
-  ]
-};
+    // Allow webhook route without auth
+    if (pathname === '/api/webhook') {
+      return new Response(null, { status: 200 });
+    }
+  
+    // Allow login page
+    if (pathname.startsWith('/login')) {
+      return new Response(null, { status: 200 });
+    }
+  
+    // Redirect all other paths to login
+    url.pathname = '/login';
+    return Response.redirect(url.toString(), 307);
+  };
+  
+  export const config = {
+    matcher: [
+      '/((?!_next/|static/|.*\\.(?:png|jpg|gif)|favicon.ico).*)',
+    ],
+  };
