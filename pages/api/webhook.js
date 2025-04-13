@@ -256,7 +256,13 @@ export default async function handler(req, res) {
       const token = req.query["hub.verify_token"];
       const challenge = req.query["hub.challenge"];
 
-      console.log("Webhook verification request:", { mode, token, challenge });
+      console.log("Webhook verification request:", { 
+        mode, 
+        token, 
+        challenge,
+        expectedToken: WEBHOOK_VERIFY_TOKEN,
+        hasAppSecret: !!FACEBOOK_APP_SECRET
+      });
 
       // Check if token and mode are in the query string
       if (!mode || !token) {
@@ -265,6 +271,10 @@ export default async function handler(req, res) {
           error: "Missing query parameters",
           required: ["hub.mode", "hub.verify_token", "hub.challenge"],
           received: req.query,
+          environment: {
+            hasVerifyToken: !!WEBHOOK_VERIFY_TOKEN,
+            hasAppSecret: !!FACEBOOK_APP_SECRET
+          }
         });
       }
 
