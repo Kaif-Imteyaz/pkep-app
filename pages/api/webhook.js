@@ -365,3 +365,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Internal server error" });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: false, // Disable body parsing, we'll do it ourselves
+    externalResolver: true, // This is a handler that resolves on its own
+  },
+};
