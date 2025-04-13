@@ -248,146 +248,55 @@ export default async function handler(req, res) {
         // Respond with the challenge token
         console.log('WEBHOOK_VERIFIED');
         return res.status(200).send(challenge);
-      } else {
-        // Respond with '403 Forbidden' if verify tokens do not match
-        console.error('Verification failed');
-        return res.status(403).json({ error: 'Verification failed' });
       }
+
+      // Respond with '403 Forbidden' if tokens do not match
+      console.error('Verification failed');
+      return res.status(403).json({ error: 'Verification failed' });
     }
-    
-    // Handle POST requests (incoming messages/status updates)
-    if (req.method === 'POST') {
-      const body = req.body;
 
-      // Verify the request signature
+    // Handle POST requests (webhook events)
+    if (req.method === 'POST') {
+      // Verify webhook signature
       if (!verifyWebhookSignature(req)) {
-        console.error('Invalid signature');
-        return res.status(401).json({ error: 'Invalid signature' });
+        console.error('Invalid webhook signature');
+        return res.status(403).json({ error: 'Invalid signature' });
       }
 
-      // Log the webhook event
-      console.log('Received webhook event:', JSON.stringify(body, null, 2));
+      const body = req.body;
+      console.log('Received webhook:', JSON.stringify(body, null, 2));
 
-      // Process the webhook with proper error handling
-      try {
-        // Process the webhook data
-        if (body.object === 'whatsapp_business_account') {
-          if (body.entry && body.entry.length > 0) {
-            for (const entry of body.entry) {
-              if (entry.changes && entry.changes.length > 0) {
-                for (const change of entry.changes) {
-                  if (change.value && change.value.messages && change.value.messages.length > 0) {
-                    // Process incoming messages
-                    for (const message of change.value.messages) {
-                      const from = message.from;
-                      const messageId = message.id;
-                      
-                      // Get the user by phone number
-                      const user = await getOfficerByPhone(from);
-                      
-                      if (!user) {
-                        console.error(`No user found for phone number: ${from}`);
-                        // Send a message to unregistered user
-                        await whatsapp.sendTextMessage(
-                          from, 
-                          null, 
-                          "Your number is not registered in our system. Please contact your administrator."
-                        );
-                        continue;
-                      }
-                      
-                      // Process different message types
-                      if (message.type === 'text' && message.text) {
-                        await handleTextMessage(from, user.id, messageId, message.text.body);
-                      } else if (message.type === 'interactive' && message.interactive) {
-                        await handleInteractiveMessage(from, user.id, messageId, message.interactive);
-                      } else if (message.type === 'button' && message.button) {
-                        // Store button message
-                        await storeMessage(messageId, user.id, from, JSON.stringify(message.button), 'button');
-                        
-                        // Process button message payload
-                        const payload = message.button.payload;
-                        
-                        if (payload.startsWith('CONFIRM_MEETING_')) {
-                          const meetingId = payload.replace('CONFIRM_MEETING_', '');
-                          await whatsapp.handleMeetingConfirmation(from, user.id, meetingId);
-                        } else if (payload.startsWith('RESCHEDULE_MEETING_')) {
-                          const meetingId = payload.replace('RESCHEDULE_MEETING_', '');
-                          await whatsapp.startReschedulingFlow(from, user.id, meetingId);
-                        } else {
-                          // Default response for unknown button payload
-                          await whatsapp.sendMainMenu(from, user.id);
-                        }
-                      } else {
-                        // Handle other message types (media, etc.)
-                        await storeMessage(messageId, user.id, from, JSON.stringify(message), message.type);
-                        await whatsapp.sendTextMessage(
-                          from, 
-                          user.id, 
-                          "Thank you for your message. How can I assist you today?"
-                        );
-                      }
-                    }
-                  }
+      // Check if this is a WhatsApp message
+      if (body.object === 'whatsapp_business_account') {
+        // Process each entry
+        for (const entry of body.entry) {
+          // Process each change
+          for (const change of entry.changes) {
+            // Process each message
+            for (const message of change.value.messages || []) {
+              const from = message.from;
+              const userId = change.value.metadata.phone_number_id;
+              const messageId = message.id;
 
-                  // Process status updates
-                  if (change.value && change.value.statuses && change.value.statuses.length > 0) {
-                    for (const status of change.value.statuses) {
-                      // Update message status in database
-                      await updateMessageStatus(status.id, status.status);
-                    }
-                  }
-                }
+              // Handle different message types
+              if (message.type === 'text') {
+                await handleTextMessage(from, userId, messageId, message.text.body);
+              } else if (message.type === 'interactive') {
+                await handleInteractiveMessage(from, userId, messageId, message.interactive);
               }
             }
           }
         }
-        
-        // End tracking with success
-        tracker.end({ success: true });
-        
-        // Return success
-        return res.status(200).send('EVENT_RECEIVED');
-      } catch (error) {
-        // Log the processing error but still return 200 to Meta
-        console.error('Error processing webhook:', error);
-        logEvent('WEBHOOK_ERROR', {
-          error: error.message,
-          stack: error.stack,
-          payload: req.body
-        });
-        
-        // End tracking with error
-        tracker.end({ 
-          success: false, 
-          error: error.message 
-        });
-        
-        // Return 200 to acknowledge receipt to Meta
-        // This prevents Meta from retrying due to server errors
-        return res.status(200).send('EVENT_RECEIVED');
       }
+
+      // Return a 200 OK response
+      return res.status(200).json({ status: 'ok' });
     }
-    
-    // Method not allowed
-    res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+
+    // Return 405 Method Not Allowed for other HTTP methods
+    return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    // Handle catastrophic errors
-    console.error('Webhook critical error:', error);
-    logEvent('WEBHOOK_CRITICAL_ERROR', {
-      error: error.message,
-      stack: error.stack
-    });
-    
-    // End tracking with critical error
-    tracker.end({ 
-      success: false, 
-      error: error.message,
-      critical: true
-    });
-    
-    // Still return 200 to Meta to prevent retries
-    return res.status(200).send('ERROR_HANDLED');
+    console.error('Webhook error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 } 
