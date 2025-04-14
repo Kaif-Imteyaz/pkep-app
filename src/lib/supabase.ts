@@ -137,3 +137,115 @@ async function initializeUserProfile(userId: string): Promise<void> {
     }
   }
 }
+
+export const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+export async function getOfficerByPhone(phone: string) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('officers')
+      .select('*')
+      .eq('phone', phone)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error getting officer:', error);
+    return null;
+  }
+}
+
+export async function saveContribution(userId: string, type: string, content: string) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('contributions')
+      .insert({
+        user_id: userId,
+        type,
+        content,
+        created_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error saving contribution:', error);
+    return false;
+  }
+}
+
+export async function storeMessage(messageId: string, userId: string, from: string, content: string, type: string) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('whatsapp_messages')
+      .insert({
+        id: messageId,
+        user_id: userId,
+        from,
+        content,
+        type,
+        created_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error storing message:', error);
+    return false;
+  }
+}
+
+export async function updateMessageStatus(messageId: string, status: string) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('whatsapp_messages')
+      .update({ status })
+      .eq('id', messageId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error updating message status:', error);
+    return false;
+  }
+}
+
+export async function getOrCreateSession(userId: string, phone: string) {
+  try {
+    // Try to get existing session
+    let { data: session, error } = await supabaseAdmin
+      .from('whatsapp_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      // If no session exists, create a new one
+      const { data: newSession, error: createError } = await supabaseAdmin
+        .from('whatsapp_sessions')
+        .insert({
+          user_id: userId,
+          phone_number: phone,
+          session_data: { state: 'main_menu' },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      return newSession;
+    }
+
+    return session;
+  } catch (error) {
+    console.error('Error getting/creating session:', error);
+    return null;
+  }
+}

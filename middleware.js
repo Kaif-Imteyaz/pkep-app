@@ -10,16 +10,20 @@ export const middleware = async (request) => {
         const token = url.searchParams.get('hub.verify_token');
         const challenge = url.searchParams.get('hub.challenge');
         
-        if (mode === 'subscribe' && token) {
-          // Allow the request to continue to the webhook handler
+        // Allow Meta's verification request to pass through
+        if (mode === 'subscribe' && token && challenge) {
           return;
         }
       }
       
       // For POST requests (webhook events)
       if (request.method === 'POST') {
-        // Allow the request to continue to the webhook handler
-        return;
+        // Verify the request is from Meta
+        const userAgent = request.headers.get('user-agent');
+        if (userAgent && userAgent.includes('facebook')) {
+          return;
+        }
+        return new Response('Unauthorized', { status: 401 });
       }
       
       // For OPTIONS requests (CORS preflight)
@@ -27,14 +31,13 @@ export const middleware = async (request) => {
         return new Response(null, {
           status: 200,
           headers: {
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': 'https://facebook.com',
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': '*'
+            'Access-Control-Allow-Headers': 'x-hub-signature-256,content-type'
           }
         });
       }
 
-      // For any other method, return 405
       return new Response('Method not allowed', { status: 405 });
     }
   
