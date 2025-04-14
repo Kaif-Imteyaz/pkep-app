@@ -38,14 +38,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Handle OPTIONS request for CORS
   if (req.method === 'OPTIONS') {
+    console.log('[WEBHOOK] Handling OPTIONS request');
     res.status(200).end();
     return;
   }
 
   try {
-    console.log('Received webhook request:', req.method);
-    console.log('Query parameters:', req.query);
-    console.log('Headers:', req.headers);
+    console.log('[WEBHOOK] Request details:', {
+      method: req.method,
+      url: req.url,
+      query: req.query,
+      headers: req.headers,
+      body: req.body
+    });
     
     // Handle GET requests (webhook verification)
     if (req.method === 'GET') {
@@ -53,36 +58,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const token = req.query['hub.verify_token'] as string;
       const challenge = req.query['hub.challenge'] as string;
 
-      console.log('Webhook verification request:', { mode, token, challenge });
+      console.log('[WEBHOOK] Verification attempt:', { 
+        mode, 
+        token: token ? '****' : undefined,
+        challenge,
+        expectedToken: WEBHOOK_VERIFY_TOKEN ? '****' : undefined
+      });
 
       // Check if token and mode are in the query string
-      if (!mode || !token) {
-        console.error('Missing query parameters');
+      if (!mode || !token || !challenge) {
+        console.error('[WEBHOOK] Missing required parameters');
         return res.status(400).json({ 
           error: 'Missing query parameters',
           required: ['hub.mode', 'hub.verify_token', 'hub.challenge'],
-          received: req.query 
+          received: {
+            mode: mode || undefined,
+            token: token ? 'provided' : undefined,
+            challenge: challenge || undefined
+          }
         });
       }
 
       // Check the mode and token
       if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
-        // Respond with the challenge token
         const duration = performance.now() - startTime;
         console.log(`[WEBHOOK] Verification successful in ${duration.toFixed(2)}ms`);
+        console.log('[WEBHOOK] Responding with challenge:', challenge);
         return res.status(200).send(challenge);
       }
 
       // Respond with '403 Forbidden' if tokens do not match
-      console.error('Verification failed');
+      console.error('[WEBHOOK] Verification failed:', {
+        invalidMode: mode !== 'subscribe',
+        tokenMismatch: token !== WEBHOOK_VERIFY_TOKEN
+      });
       return res.status(403).json({ 
         error: 'Verification failed',
-        details: 'Token mismatch or invalid mode'
+        details: {
+          invalidMode: mode !== 'subscribe',
+          tokenMismatch: true
+        }
       });
     }
 
     // Handle POST requests (webhook events)
     if (req.method === 'POST') {
+      console.log('[WEBHOOK] Processing POST request');
+      
       // Verify webhook signature
       if (!verifyWebhookSignature(req)) {
         const duration = performance.now() - startTime;
@@ -91,11 +113,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const body = req.body;
-      console.log('Received webhook body:', JSON.stringify(body, null, 2));
+      console.log('[WEBHOOK] Request body:', JSON.stringify(body, null, 2));
 
       // Process WhatsApp messages
       if (body.object === 'whatsapp_business_account') {
         for (const entry of body.entry) {
+          console.log('[WEBHOOK] Processing entry:', entry.id);
           for (const change of entry.changes) {
             if (change.value.messages) {
               for (const message of change.value.messages) {
@@ -108,12 +131,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   console.log(`[MESSAGE] Processing text from ${from}: ${message.text.body}`);
                 }
 
-                const messageDuration = performance.now() - startTime;
+                const messageDuration = performance.now() - messageStartTime;
                 console.log(`[MESSAGE] Processed message ${messageId} in ${messageDuration.toFixed(2)}ms`);
               }
             }
           }
         }
+      } else {
+        console.warn('[WEBHOOK] Unexpected object type:', body.object);
       }
       
       const duration = performance.now() - startTime;
@@ -122,6 +147,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).send("EVENT_RECEIVED");
     }
 
+    console.warn('[WEBHOOK] Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     const duration = performance.now() - startTime;
