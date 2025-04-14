@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webhook Tester</title>
+</head>
+<body>
+    <h1>Webhook Tester</h1>
+    
+    <h2>GET Request (Verification)</h2>
+    <form action="http://localhost:3001/webhook" method="GET">
+        <div>
+            <label>hub.mode:</label>
+            <input type="text" name="hub.mode" value="subscribe">
+        </div>
+        <div>
+            <label>hub.verify_token:</label>
+            <input type="text" name="hub.verify_token" value="c4be3b8e8d1d5a42b3b4f3c9a72e7a80d5e3a45fbeb3a9ecf21c416f2e6d2d47">
+        </div>
+        <div>
+            <label>hub.challenge:</label>
+            <input type="text" name="hub.challenge" value="test_challenge">
+        </div>
+        <button type="submit">Test Verification</button>
+    </form>
+
+    <h2>Direct Links</h2>
+    <p>Click this link to test verification:</p>
+    <a href="http://localhost:3001/webhook?hub.mode=subscribe&hub.verify_token=c4be3b8e8d1d5a42b3b4f3c9a72e7a80d5e3a45fbeb3a9ecf21c416f2e6d2d47&hub.challenge=test_challenge">
+        Test Webhook Verification
+    </a>
+</body>
+</html> 

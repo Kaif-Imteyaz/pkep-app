@@ -7,8 +7,22 @@
   "outputDirectory": "dist",
   "routes": [
     {
+      "src": "/webhook",
+      "dest": "/webhook.html"
+    },
+    {
+      "src": "/api/webhook",
+      "dest": "/api/webhook",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-hub-signature-256"
+      }
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/pages/api/$1.js"
+      "dest": "/api/$1"
     },
     {
       "handle": "filesystem"
@@ -24,6 +38,7 @@
     "FACEBOOK_APP_SECRET": "env",
     "WEBHOOK_VERIFY_TOKEN": "env",
     "WHATSAPP_TOKEN": "env",
-    "WHATSAPP_PHONE_NUMBER_ID": "env"
+    "WHATSAPP_PHONE_NUMBER_ID": "env",
+    "TEST_PHONE": "env"
   }
 } 
