@@ -8,17 +8,27 @@
   "routes": [
     {
       "src": "/webhook",
-      "dest": "/pages/api/webhook.js",
-      "methods": ["GET", "POST", "OPTIONS"]
+      "dest": "/api/webhook",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-hub-signature-256"
+      }
     },
     {
       "src": "/api/webhook",
-      "dest": "/pages/api/webhook.js",
-      "methods": ["GET", "POST", "OPTIONS"]
+      "dest": "/api/webhook",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-hub-signature-256"
+      }
     },
     {
       "src": "/api/(.*)",
-      "dest": "/pages/api/$1.js"
+      "dest": "/api/$1"
     },
     {
       "handle": "filesystem"

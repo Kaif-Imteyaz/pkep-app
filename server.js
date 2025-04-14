@@ -45,7 +45,7 @@ function verifyWebhookSignature(req) {
 }
 
 // Webhook endpoint
-app.all('/webhook/whatsapp', async (req, res) => {
+const webhookHandler = async (req, res) => {
   const startTime = performance.now();
   try {
     console.log('Received webhook request:', req.method);
@@ -73,7 +73,8 @@ app.all('/webhook/whatsapp', async (req, res) => {
       // Check the mode and token
       if (mode === 'subscribe' && token === WEBHOOK_VERIFY_TOKEN) {
         // Respond with the challenge token
-        console.log('WEBHOOK_VERIFIED');
+        const duration = performance.now() - startTime;
+        console.log(`[WEBHOOK] Verification successful in ${duration.toFixed(2)}ms`);
         return res.status(200).send(challenge);
       }
 
@@ -87,28 +88,38 @@ app.all('/webhook/whatsapp', async (req, res) => {
 
     // Handle POST requests (webhook events)
     if (req.method === 'POST') {
-      // Mock webhook data for testing
-      const mockData = {
-        object: 'whatsapp_business_account',
-        entry: [{
-          id: 'test_account',
-          changes: [{
-            value: {
-              messages: [{
-                from: '1234567890',
-                id: 'test_message',
-                text: { body: 'Test message' },
-                type: 'text',
-                timestamp: Date.now().toString()
-              }],
-              statuses: []
-            }
-          }]
-        }]
-      };
+      // Verify webhook signature
+      if (!verifyWebhookSignature(req)) {
+        const duration = performance.now() - startTime;
+        console.error(`[WEBHOOK] Signature verification failed in ${duration.toFixed(2)}ms`);
+        return res.status(403).json({ error: 'Invalid signature' });
+      }
 
-      console.log('Processing webhook event...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate processing time
+      const body = req.body;
+      console.log('Received webhook body:', JSON.stringify(body, null, 2));
+
+      // Process WhatsApp messages
+      if (body.object === 'whatsapp_business_account') {
+        for (const entry of body.entry) {
+          for (const change of entry.changes) {
+            if (change.value.messages) {
+              for (const message of change.value.messages) {
+                const messageStartTime = performance.now();
+                const from = message.from;
+                const messageId = message.id;
+
+                // Handle different message types
+                if (message.type === 'text') {
+                  console.log(`[MESSAGE] Processing text from ${from}: ${message.text.body}`);
+                }
+
+                const messageDuration = performance.now() - messageStartTime;
+                console.log(`[MESSAGE] Processed message ${messageId} in ${messageDuration.toFixed(2)}ms`);
+              }
+            }
+          }
+        }
+      }
       
       const duration = performance.now() - startTime;
       console.log(`[WEBHOOK] Request processed in ${duration.toFixed(2)}ms`);
@@ -122,7 +133,12 @@ app.all('/webhook/whatsapp', async (req, res) => {
     console.error(`[WEBHOOK_ERROR] Request failed after ${duration.toFixed(2)}ms:`, error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
+
+// Register webhook endpoints
+app.all('/webhook/whatsapp', webhookHandler);
+app.all('/webhook', webhookHandler);
+app.all('/api/webhook', webhookHandler);
 
 // Start server
 app.listen(PORT, () => {

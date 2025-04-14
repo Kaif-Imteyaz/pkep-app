@@ -13,10 +13,18 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/webhook/whatsapp': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
       '/webhook': {
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
+      '/api/webhook': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      }
     },
   },
 });
