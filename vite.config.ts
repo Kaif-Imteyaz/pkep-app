@@ -14,15 +14,15 @@ export default defineConfig({
   server: {
     proxy: {
       '/webhook/whatsapp': {
-        target: 'http://localhost:3001',
+        target: 'https://pkep-app.vercel.app',
         changeOrigin: true,
       },
       '/webhook': {
-        target: 'http://localhost:3001',
+        target: 'https://pkep-app.vercel.app',
         changeOrigin: true,
       },
       '/api/webhook': {
-        target: 'http://localhost:3001',
+        target: 'https://pkep-app.vercel.app',
         changeOrigin: true,
       }
     },
