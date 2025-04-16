@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Phone, MessageSquare, Save, Loader2, CheckCircle, XCircle, AlertCircle, Send, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { sendWhatsAppTemplate,sendWhatsAppTextMessage } from '../lib/whatsappMessage';
+
+
 
 interface Profile {
   id: string;
@@ -131,6 +134,7 @@ export function WhatsAppSettings() {
       return false;
     }
   };
+  
 
   // Fetch the user profile and WhatsApp settings
   async function fetchProfile() {
@@ -444,6 +448,7 @@ export function WhatsAppSettings() {
     return date.toLocaleString();
   };
 
+
   // If there's an auth error, show a login prompt
   if (authError) {
     return (
@@ -468,6 +473,33 @@ export function WhatsAppSettings() {
       </div>
     );
   }
+
+  async function exampleUsage() {
+  const phoneNumberId =  '637393796117589';
+  const accessToken = localStorage.getItem('accessToken') ?? '';
+  const recipientNumber = phone;
+
+  console.log(phone);
+  try {
+    const templateResponse = await sendWhatsAppTemplate(
+      phoneNumberId,
+      accessToken,
+      recipientNumber,
+      'hello_world'
+    );
+    console.log('Template Response:', templateResponse);
+
+    // const textResponse = await sendWhatsAppTextMessage(
+    //   phoneNumberId,
+    //   accessToken,
+    //   recipientNumber,
+    //   'Hello from the function!'
+    // );
+    // console.log('Text Response:', textResponse);
+  } catch (error) {
+    console.error('Error in example usage:', error);
+  }
+}
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -520,6 +552,15 @@ export function WhatsAppSettings() {
                 <p className="mt-1 text-sm text-gray-500">
                   Enter your WhatsApp number with country code (e.g., +91 for India)
                 </p>
+                <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={exampleUsage}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                >
+                  Send
+                </button>
+                </div>
               </div>
               
               <div className="flex items-start">

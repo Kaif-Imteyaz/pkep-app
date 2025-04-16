@@ -7,6 +7,7 @@ export function Auth() {
   const [email, setEmail] = useState('test@punjab.gov.in');
   const [password, setPassword] = useState('test123');
   const [isSignUp, setIsSignUp] = useState(false);
+  
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +25,14 @@ export function Auth() {
         setIsSignUp(false);
       }
     } else {
+      localStorage.setItem('email', email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
-      if (error) alert(error.message);
+      if (error) alert(error.message)
+        localStorage.setItem('email', email);
+      
     }
     
     setLoading(false);
