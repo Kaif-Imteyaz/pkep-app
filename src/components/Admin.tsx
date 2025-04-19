@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { Toaster, toast } from 'react-hot-toast';
 import { Phone, MessageSquare, Save, Loader2, CheckCircle, XCircle, AlertCircle, Send, Info, Braces } from 'lucide-react';
 
 export function Admin(){
@@ -8,7 +8,7 @@ export function Admin(){
 
     function storeNewAccessToken() {
         localStorage.setItem('accessToken', accessToken)
-        toast("New Token Stored")
+        toast.success("New Token Stored")
     }
     return(
         <div className="max-w-3xl mx-auto">
@@ -39,7 +39,10 @@ export function Admin(){
                 >
                   Store New Access Token
                 </button>
-                <ToastContainer/>
+                <Toaster
+                  position="top-center"
+                  reverseOrder = {true}
+                />
                 </div>
               </div>
             </div>

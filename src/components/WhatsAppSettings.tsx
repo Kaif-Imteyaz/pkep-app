@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Phone, MessageSquare, Save, Loader2, CheckCircle, XCircle, AlertCircle, Send, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendWhatsAppTemplate,sendWhatsAppTextMessage } from '../lib/whatsappMessage';
+import {Toaster, toast} from 'react-hot-toast';
 
 
 
@@ -488,6 +489,7 @@ export function WhatsAppSettings() {
       'hello_world'
     );
     console.log('Template Response:', templateResponse);
+    toast.success('Message Sent')
 
     // const textResponse = await sendWhatsAppTextMessage(
     //   phoneNumberId,
@@ -498,6 +500,7 @@ export function WhatsAppSettings() {
     // console.log('Text Response:', textResponse);
   } catch (error) {
     console.error('Error in example usage:', error);
+    toast.error('Message not sent')
   }
 }
 
@@ -560,6 +563,10 @@ export function WhatsAppSettings() {
                 >
                   Send
                 </button>
+                <Toaster
+                position='top-center'
+                reverseOrder={true}
+                />
                 </div>
               </div>
               
